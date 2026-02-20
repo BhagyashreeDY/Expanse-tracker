@@ -29,3 +29,6 @@ Ensure all calculations use `shopspring/decimal` for financial accuracy."
 2. **Middleware**: Add structured panic recovery and structured logging.
 3. **Health Check**: Add a `/health` endpoint that pings the DB and reports status.
 4. **Documentation**: Generate a README explaining the 'Why float is unsafe' rationale and the 'Greedy Algorithm' complexity (O(N log N))."
+
+## 6. Documentation Overhaul
+"Refactor all Markdown documentation (README, DESIGN, ALGORITHM, EXAMPLES) for academic and industry-level evaluation. Ensure clear structural links, pseudocode for algorithms, realistic usage scenarios, and a clean professional layout. Focus on explaining the design trade-offs and complexity analysis."

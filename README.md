@@ -1,68 +1,85 @@
 # Debt Optimization & Intelligent Settlement Engine
 
 ## Project Overview
-A production-grade REST API built in Go for tracking shared expenses and optimizing debt settlements. The engine ensures clinical financial accuracy using fixed-point arithmetic and minimizes settlement overhead using an optimized greedy algorithm.
+A production-grade REST API built in Go for tracking shared expenses and optimizing debt settlements. The engine ensures high financial accuracy using fixed-point arithmetic and minimizes settlement overhead using an optimized greedy algorithm.
 
-## Core Features
-- **Deterministic Settlement**: Minimizes total transaction count using an O(n log n) greedy algorithm.
-- **Strategy Comparison**: Built-in benchmarking to compare Optimized (Greedy) vs Naive (Pairwise) settlement strategies.
-- **Financial Precision**: Uses `shopspring/decimal` for all monetary logic, strictly avoiding `float64` to prevent precision loss.
-- **Time-Filtered Analytics**: Support for `from` and `to` date filters on all balance and settlement queries.
-- **Integrity Validation**: Strict rules for split consistency, non-negative amounts, and rounding drift protection.
+### Key References
+- **[System Design](DESIGN.md)**: Deep dive into architecture and precision handling.
+- **[Algorithm Logic](ALGORITHM.md)**: Step-by-step breakdown of the Greedy settlement engine.
+- **[Real-World Examples](EXAMPLES.md)**: Scenarios showing the algorithm in action.
+- **[Development Prompts](prompts.md)**: Transparent list of all AI interactions.
+- **[Testing Guide](API_TESTING.md)**: Manual verification commands and payloads.
 
-## Why `float64` is Unsafe for Financial Systems
-Standard floating-point numbers (`float64`) use binary representation (IEEE 754), which cannot accurately represent many decimal values (like $0.1$ or $0.01$). Over thousands of transactions, these tiny inaccuracies accumulate into significant "rounding errors," leading to data corruption and financial discrepancies.
+---
 
-**Solution**: This project uses `DECIMAL(18,2)` in PostgreSQL and `shopspring/decimal` in Go to handle money as fixed-precision integers internally.
+## 🚀 Core Features
+- **Deterministic Settlement**: Minimizes transaction count using an $O(N \log N)$ greedy algorithm.
+- **Strategy Benchmarking**: Real-time comparison between Optimized and Naive settlement strategies.
+- **Fixed-Point Precision**: Strictly uses the `decimal` type to prevent binary rounding errors found in `float64`.
+- **Time-Series Filtering**: Snapshot your balances and debts across any specific date range.
+- **Rounding Drift Protection**: Guaranteed sum consistency for equal and percentage splits.
 
-## Algorithmic Strength
-### Greedy Settlement Logic
-The core engine solves the "Minimum Cash Flow" problem by:
-1. **Aggregating Net Balances**: Computing exactly how much each user is "in the red" or "in the black" across all group expenses.
-2. **Sorting by Magnitude**: Sorting debtors and creditors by their absolute values.
-3. **Optimized Matching**: Greedily matching the largest debtor with the largest creditor iteratively.
+---
 
-### Why Greedy Reduces Transactions?
-In a naive system, every expense might result in a separate transaction. In a group of $N$ people, if everyone pays for everyone else once, you could have $N(N-1)$ transactions. 
+## 📡 API Endpoints Summary
 
-The Greedy algorithm proves that any group of $N$ people can be settled in at most $N-1$ transactions, drastically reducing the mental and financial overhead of bank transfers.
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/users` | Register a new user with email and username. |
+| `POST` | `/groups` | Create a new expense group. |
+| `POST` | `/groups/:id/members` | Add a user to an existing group. |
+| `POST` | `/groups/:id/expenses` | Record a new expense (supports EQUAL splits). |
+| `GET` | `/groups/:id/balances` | View net balances for all group members. |
+| `GET` | `/groups/:id/settlement` | Get the optimized settlement transaction list. |
+| `GET` | `/groups/:id/settlement/compare`| Compare Optimized vs. Naive metrics. |
+| `GET` | `/health` | Check API and Database connectivity status. |
 
-### Complexity Analysis
-- **Time Complexity**: $O(N \log N)$ where $N$ is the number of users in the group. The dominant factor is the sorting of the balances.
-- **Space Complexity**: $O(N)$ to store the balance mapping and the final transaction list.
+---
 
-## Before vs After Optimization
-**Scenario**: Alice, Bob, Charlie, and David go on a trip.
+## 🛠️ Quick Start & Usage Snippet
 
-**Raw Expenses (Pre-Optimization):**
-- Alice pays $100 (others owe her $25 each)
-- Bob pays $50 (others owe him $12.5 each)
-- *Total raw splits: 6 transactions if everyone pays everyone back individually.*
+### 1. Requirements
+- Go 1.22+
+- PostgreSQL
+- `.env` file with `DB_USER`, `DB_PASSWORD`, `DB_NAME`
 
-**Optimized Result (Greedy):**
-- Charlie pays Alice $37.50
-- David pays Alice $37.50
-- Alice pays Bob $0 (Net calculation cancels this out as Alice is still a net creditor)
-- *Total optimized transactions: 2.*
+### 2. Installation
+```bash
+# Clone the repository
+git clone https://github.com/BhagyashreeDY/Expanse-tracker.git
+cd Expanse-tracker
 
-**Efficiency Gain**: 66.6% reduction in manual payments.
+# Run migrations (PostgreSQL)
+psql -d expense_tracker -f migrations/001_init_schema.sql
 
-## Design Trade-offs
-- **Greedy vs Optimal**: While the greedy approach is $O(N \log N)$ and highly efficient, it doesn't always find the *theoretical* minimum if sub-groups within the group could balance themselves independently (a variation of the subset sum problem, which is NP-Hard). However, for group expenses, the difference is negligible, and the greedy approach is the industry standard for its performance and reliability.
-- **Real-time Recalculation**: Every query for settlements recalculates current balances from raw expenses. This ensures 100% data integrity but might require caching for extremely large groups.
+# Start the server
+go run cmd/main.go
+```
 
-## API Endpoints
-- `POST /users`: Register a new user.
-- `POST /groups`: Create a new expense group.
-- `POST /groups/:id/expenses`: Add an expense (EQUAL, PERCENTAGE, or EXACT split).
-- `GET /groups/:id/balances`: View current net balances.
-- `GET /groups/:id/settlement`: Get the optimized settlement plan.
-- `GET /groups/:id/settlement/compare`: Compare Greedy vs Naive strategies.
-- `POST /groups/:id/settlement/record`: Mark a payment as completed.
+### 3. Example Request (Record Expense)
+```bash
+curl -X POST http://localhost:8080/groups/<GROUP_ID>/expenses \
+-H "Content-Type: application/json" \
+-d '{
+    "payer_id": "<USER_UUID>",
+    "amount": "120.00",
+    "description": "Shared Dinner",
+    "split_type": "EQUAL",
+    "splits": [
+        {"user_id": "<USER_1>"},
+        {"user_id": "<USER_2>"},
+        {"user_id": "<USER_3>"}
+    ]
+}'
+```
 
-## Architecture
-- `/cmd`: Main entry point.
-- `/internal/handlers`: Controller layer (Gin).
-- `/internal/services`: Domain services (Splitting logic, validation).
-- `/internal/algorithms`: Pure algorithmic engine.
-- `/internal/repositories`: Database persistence (Postgres/pgx).
+---
+
+## 📊 Algorithmic Complexity
+- **Time**: $O(N \log N)$ where $N$ is the number of participants (due to sorting creditors and debtors).
+- **Space**: $O(N)$ for balance aggregation and matching pools.
+
+---
+
+## 🏗 Architecture
+The project follows **Clean Architecture** patterns, ensuring that business logic in `internal/services` is decoupled from HTTP handlers in `internal/handlers` and database persistence in `internal/repositories`.
