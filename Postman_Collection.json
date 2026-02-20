@@ -1,0 +1,202 @@
+{
+	"info": {
+		"_postman_id": "debt-optimization-engine-v2",
+		"name": "Debt Optimization Engine V2 (Advanced)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Analytics & Modeling",
+			"item": [
+				{
+					"name": "Get Debt Graph",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/groups/{{group_id}}/debt-graph",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"groups",
+								"{{group_id}}",
+								"debt-graph"
+							]
+						}
+					}
+				},
+				{
+					"name": "Compare Settlement Strategies",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/groups/{{group_id}}/settlement/compare",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"groups",
+								"{{group_id}}",
+								"settlement",
+								"compare"
+							]
+						}
+					}
+				},
+				{
+					"name": "Detect Anomaly",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/groups/{{group_id}}/anomalies",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"groups",
+								"{{group_id}}",
+								"anomalies"
+							]
+						}
+					}
+				},
+				{
+					"name": "Integrity Check",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/groups/{{group_id}}/integrity-check",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"groups",
+								"{{group_id}}",
+								"integrity-check"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Settlements",
+			"item": [
+				{
+					"name": "Get Optimized Settlement (With Fee)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/groups/{{group_id}}/settlement?transaction_fee=5.00",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"groups",
+								"{{group_id}}",
+								"settlement"
+							],
+							"query": [
+								{
+									"key": "transaction_fee",
+									"value": "5.00"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Settlement (Time Filtered)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/groups/{{group_id}}/settlement?from=2026-01-01&to=2026-12-31",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"groups",
+								"{{group_id}}",
+								"settlement"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "2026-01-01"
+								},
+								{
+									"key": "to",
+									"value": "2026-12-31"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Record Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"from_user_id\": \"USER_A_UUID\",\n    \"to_user_id\": \"USER_B_UUID\",\n    \"amount\": \"50.00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/groups/{{group_id}}/settlement/record",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"groups",
+								"{{group_id}}",
+								"settlement",
+								"record"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Performance",
+			"item": [
+				{
+					"name": "Algorithm Benchmark",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/benchmark?users=500",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"benchmark"
+							],
+							"query": [
+								{
+									"key": "users",
+									"value": "500"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "group_id",
+			"value": "ENTER_GROUP_UUID"
+		}
+	]
+}

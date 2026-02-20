@@ -1,0 +1,9 @@
+.env
+*.exe
+*.test
+bin/
+tmp/
+.git/
+.gemini/
+.agent/
+postman_collection.json.backup
