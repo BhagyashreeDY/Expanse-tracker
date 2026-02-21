@@ -20,7 +20,7 @@ We split the group into two lists:
 1. **Debtors**: People who need to pay.
 2. **Creditors**: People who need to get paid.
 
-We sort both lists from largest to smallest. This is the "greedy" part—we always try to settle the biggest debts first to knock them out of the equation quickly.
+We sort both lists from largest to smallest. This is the "greedy" part, we always try to settle the biggest debts first to knock them out of the equation quickly.
 
 ### 3. Match and Settle
 While there are people left in both lists:
@@ -40,5 +40,5 @@ Imagine Alice is owed ₹40, and Bob owes ₹30, while Charlie owes ₹10.
 By matching the biggest debts first, we avoid "fragmenting" the money. Any group of N people can always be settled in at most N-1 steps.
 
 ## Complexity
-The algorithm is very fast—**O(n log n)**. The only "slow" part is the sorting, which is negligible for any realistic group size (even hundreds of people). We use fixed-precision math (no floats!) to make sure not a single cent is lost in the process.
+The algorithm is very fast, **O(n log n)**. The only "slow" part is the sorting, which is negligible for any realistic group size (even hundreds of people). We use fixed-precision math (no floats!) to make sure not a single cent is lost in the process.
 
