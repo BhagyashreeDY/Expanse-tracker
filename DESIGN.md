@@ -1,38 +1,33 @@
-# System Design: Debt Optimization Engine
+# Design & Tech Choices
 
-## 1. Architectural Layers
-The project follows a **Clean Layered Architecture** to ensure modularity, testability, and clear separation of concerns.
+This document explains why we built the system this way and the trade-offs we made.
 
-- **`cmd/` (Entry Point)**: Handles dependency injection, configuration loading, and starts the Gin server.
-- **`internal/handlers/` (Interface Layer)**: Manages HTTP request parsing, input validation (Gin bindings), and response formatting.
-- **`internal/services/` (Business Logic)**: Orchestrates complex operations like calculating balances across groups, handling expense split logic, and enforcing financial integrity rules.
-- **`internal/algorithms/` (Logic Layer)**: Pure, stateless implementation of settlement algorithms (Greedy and Naive).
-- **`internal/repositories/` (Data Access)**: Handles all PostgreSQL interactions using the high-performance `pgxpool` driver.
+## 1. Clean Architecture
+We followed a layered approach to keep the code easy to maintain and test:
+- **Handlers**: The "front door" (Gin routes). They just parse JSON and send it down.
+- **Services**: The "brain". This is where rounding drift is handled and group logic lives.
+- **Algorithms**: Pure math. These don't know about databases; they just take numbers and return transaction lists.
+- **Repositories**: The "memory". All the SQL queries live here.
 
-## 2. Database Schema
-The schema is optimized for **atomic financial transactions** and data integrity.
+## 2. Why we avoid "Float" for money
+In programming, basic decimals (floats) are stored as binary fractions. This causes tiny errors (like `0.1 + 0.2` resulting in `0.30000000000000004`). In a debt app, these errors accumulate and eventually, the group doesn't balance to zero.
 
-- **`users` & `groups`**: Core domain entities.
-- **`expenses`**: Records the summary of a spending event (total amount, payer, split type).
-- **`expense_splits`**: Normalizes the participant data. Each row represents exactly how much a specific user owes for a specific expense.
-- **`DECIMAL(18,2)`**: All monetary columns use fixed-point decimals. This prevents precision loss and ensures that the sum of splits always matches the database state of the parent expense.
+**Our Choice**: We use `shopspring/decimal`. It treats numbers as integers with a decimal point, meaning `0.1 + 0.2` is exactly `0.3`. No rounding errors, ever.
 
-## 3. Financial Precision: The Decimal Strategy
-Standard floating-point numbers (`float64`) are avoided entirely in the financial logic.
+## 3. Handling the "Penny Problem"
+When you split a $10 bill 3 ways, it becomes $3.3333...
+If you give everyone $3.33, you've only accounted for $9.99. Someone "lost" a penny.
 
-- **The Problem**: Float64 uses binary fractions (base-2), which cannot represent common decimal values (base-10) like 0.1 exactly.
-- **The Solution**: We use the `shopspring/decimal` library in Go. It stores numbers as arbitrary-precision integers with an exponent, allowing for exact addition, subtraction, and comparison.
+**Our Solution**: Our `CalculateEqualSplits` function gives the first (N-1) people the rounded amount and gives the last person the remainder.
+- Person 1: $3.33
+- Person 2: $3.33
+- Person 3: $3.34
+Total: $10.00. This ensures the database always stays in balance.
 
-## 4. Validation & Integrity Strategy
-The system implements a multi-stage validation pipeline:
-1. **Request Validation**: Gin ensures that UUIDs and positive amounts are sent in the JSON body.
-2. **Business Rules (`ValidateSplits`)**:
-   - Rejects negative split amounts.
-   - Rejects duplicate users in a single expense.
-   - **Rounding Drift Guard**: In `CalculateEqualSplits`, the last participant is assigned `Total - (N-1)*Split` to ensure the sum is exactly equal to the total, even when the division is not clean (e.g., $10 / 3$).
-3. **Database Constraints**: SQL-level `CHECK` constraints prevent negative amounts from being stored.
+## 4. Database Integrity
+We use PostgreSQL because of its strong consistency and we use `pgxpool` for connection management.
+- Every expense insertion is wrapped in a **SQL Transaction**. If the expense split data fails to save, the main expense isn't saved either. This avoids "zombie" expenses with no splits.
+- We use `DECIMAL(18,2)` in the DB to match our Go-side decimal logic.
 
-## 5. Time-Filtered Settlement Logic
-The repository layer supports optional `from` and `to` timestamps for all financial queries.
-- This allows users to view their debt status for a specific month, trip, or custom range.
-- The service layer recalculates balances dynamically based on the filtered set of expenses, providing a point-in-time financial snapshot without needing separate ledger entries.
+## 5. Filtering logic
+The balance calculation is dynamic. Instead of storing a "running total" for each user (which can get out of sync), we calculate the net balance on the fly from the raw expense records. This allows us to easily add **Date Filtering**—you can ask "what do I owe for only the trip in June?" and the engine will calculate it perfectly.

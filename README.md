@@ -1,69 +1,78 @@
-# Debt Optimization & Intelligent Settlement Engine
+# Debt Optimization & Settlement Engine
 
-## Project Overview
-A production-grade REST API built in Go for tracking shared expenses and optimizing debt settlements. The engine ensures high financial accuracy using fixed-point arithmetic and minimizes settlement overhead using an optimized greedy algorithm.
+## What is this?
+This is a straightforward, production-ready Go API for tracking group expenses and settling debts. The main goal is to make sure everyone gets paid back with the fewest number of bank transfers possible. We built this to be exact—using proper decimal math instead of risky floats—and efficient.
 
-### Key References
-- **[System Design](DESIGN.md)**: Deep dive into architecture and precision handling.
-- **[Algorithm Logic](ALGORITHM.md)**: Step-by-step breakdown of the Greedy settlement engine.
-- **[Real-World Examples](EXAMPLES.md)**: Scenarios showing the algorithm in action.
-- **[Development Prompts](prompts.md)**: Transparent list of all AI interactions.
-- **[Testing Guide](API_TESTING.md)**: Manual verification commands and payloads.
+### System Architecture
+```mermaid
+graph TD
+    User((User/Client)) -->|REST API| Gin[Gin Router]
+    Gin -->|Request| Handlers[Handlers Layer]
+    Handlers -->|DTO| Services[Service Layer]
+    Services -->|Logic| Algorithms[Greedy Engine]
+    Services -->|Persistence| Repo[Postgres Repository]
+    Repo -->|SQL| DB[(PostgreSQL)]
+```
+
+### Quick Links
+- [How the matching works](ALGORITHM.md)
+- [Design choices & Tech stack](DESIGN.md)
+- [Example scenarios](EXAMPLES.md)
+- [How to test the API](API_TESTING.md)
+- [Project development notes (AI Prompts)](prompts.md)
 
 ---
 
-## 🚀 Core Features
-- **Deterministic Settlement**: Minimizes transaction count using an $O(N \log N)$ greedy algorithm.
-- **Strategy Benchmarking**: Real-time comparison between Optimized and Naive settlement strategies.
-- **Fixed-Point Precision**: Strictly uses the `decimal` type to prevent binary rounding errors found in `float64`.
-- **Time-Series Filtering**: Snapshot your balances and debts across any specific date range.
-- **Rounding Drift Protection**: Guaranteed sum consistency for equal and percentage splits.
+## Key Features
+- **Smart Debt Matching**: Uses a "greedy" approach to settle group debts in N-1 transactions or less.
+- **Accuracy First**: We use `shopspring/decimal` for every calculation. No rounding errors, no missing cents.
+- **Flexible Filters**: You can filter balances and settlements by date (using `from` and `to` query params).
+- **Strategy Benchmarking**: Check how much better the optimized math is compared to basic pairwise settlement.
+- **Clean Code**: Standard Go project structure with clear separation between routing, logic, and database.
 
 ---
 
-## 📡 API Endpoints Summary
+## API At a Glance
 
-| Method | Endpoint | Description |
+| Method | Endpoint | What it does |
 | :--- | :--- | :--- |
-| `POST` | `/users` | Register a new user with email and username. |
-| `POST` | `/groups` | Create a new expense group. |
-| `POST` | `/groups/:id/members` | Add a user to an existing group. |
-| `POST` | `/groups/:id/expenses` | Record a new expense (supports EQUAL splits). |
-| `GET` | `/groups/:id/balances` | View net balances for all group members. |
-| `GET` | `/groups/:id/settlement` | Get the optimized settlement transaction list. |
-| `GET` | `/groups/:id/settlement/compare`| Compare Optimized vs. Naive metrics. |
-| `GET` | `/health` | Check API and Database connectivity status. |
+| `POST` | `/users` | Create a new user. |
+| `POST` | `/groups` | Create an expense group. |
+| `POST` | `/groups/:id/members` | Add a user to a group. |
+| `POST` | `/groups/:id/expenses` | Add a bill (auto-split supported). |
+| `GET` | `/groups/:id/balances` | See who is in the red or black. |
+| `GET` | `/groups/:id/settlement` | Get the payment plan. |
+| `GET` | `/groups/:id/settlement/compare` | Compare matching strategies. |
+| `GET` | `/health` | Check if the API and DB are alive. |
 
 ---
 
-## 🛠️ Quick Start & Usage Snippet
+## Getting Started
 
-### 1. Requirements
-- Go 1.22+
-- PostgreSQL
-- `.env` file with `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+### 1. Setup
+- Make sure you have **Go 1.22+** and **PostgreSQL** installed.
+- Set up your `.env` file with your database credentials (check `config/config.go` for the keys).
 
-### 2. Installation
+### 2. Run Migrations
+Import the schema into your Postgres database:
 ```bash
-# Clone the repository
-git clone https://github.com/BhagyashreeDY/Expanse-tracker.git
-cd Expanse-tracker
+psql -d your_db_name -f migrations/001_init_schema.sql
+```
 
-# Run migrations (PostgreSQL)
-psql -d expense_tracker -f migrations/001_init_schema.sql
-
-# Start the server
+### 3. Start the Engine
+```bash
 go run cmd/main.go
 ```
 
-### 3. Example Request (Record Expense)
+### 4. Try it out
+Here is how you'd add a $120 dinner split between three people:
 ```bash
 curl -X POST http://localhost:8080/groups/<GROUP_ID>/expenses \
 -H "Content-Type: application/json" \
 -d '{
-    "payer_id": "<USER_UUID>",
+    "payer_id": "<PAYER_UUID>",
     "amount": "120.00",
-    "description": "Shared Dinner",
+    "description": "Team Dinner",
     "split_type": "EQUAL",
     "splits": [
         {"user_id": "<USER_1>"},
@@ -75,11 +84,6 @@ curl -X POST http://localhost:8080/groups/<GROUP_ID>/expenses \
 
 ---
 
-## 📊 Algorithmic Complexity
-- **Time**: $O(N \log N)$ where $N$ is the number of participants (due to sorting creditors and debtors).
-- **Space**: $O(N)$ for balance aggregation and matching pools.
-
----
-
-## 🏗 Architecture
-The project follows **Clean Architecture** patterns, ensuring that business logic in `internal/services` is decoupled from HTTP handlers in `internal/handlers` and database persistence in `internal/repositories`.
+## Performance Notes
+- **Time Complexity**: O(n log n). The bottleneck is just sorting the people by how much they owe or are owed.
+- **Consistency**: We use database transactions to make sure that if a split fails, the whole expense isn't saved.

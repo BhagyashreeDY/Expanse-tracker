@@ -1,72 +1,56 @@
-# Settlement Examples: Before vs. After Optimization
+# Common Scenarios & Use Cases
 
-This document provides concrete scenarios to demonstrate the efficiency gains of the Greedy Settlement Engine compared to naive pairwise matching.
+Here are a few ways the optimization engine handles real-world debt.
 
-## Scenario 1: The Weekend Trip (Circular Debt)
-**Participants**: Alice, Bob, Charlie
+## Scenario 1: The Group Dinner (3 People)
+**Alice, Bob, and Charlie** go out.
+1. Alice pays $120 for the meal ($40 each split).
+2. Bob pays $90 for wine ($30 each split).
+3. Charlie pays $30 for desserts ($10 each split).
 
-### Raw Activity:
-1. **Dinner**: Alice pays $120 for everyone ($40 each).
-2. **Fuel**: Bob pays $90 for everyone ($30 each).
-3. **Parking**: Charlie pays $30 for everyone ($10 each).
+### The Math:
+- Alice spent $120, owes $80 (her share of the wine & dessert). Net: **+$40**
+- Bob spent $90, owes $80 (his share of dinner & dessert). Net: **+$10**
+- Charlie spent $30, owes $80 (his share of dinner & wine). Net: **-$50**
 
-### Net Balances:
-- **Alice**: Pays $120, owes $40 (Own) + $30 (Fuel) + $10 (Parking). Net: **+$40**
-- **Bob**: Pays $90, owes $40 (Dinner) + $30 (Own) + $10 (Parking). Net: **+$10**
-- **Charlie**: Pays $30, owes $40 (Dinner) + $30 (Fuel) + $10 (Own). Net: **-$50**
+### The Solution:
+Instead of 6 different payments between everyone, the engine gives you just 2:
+- **Charlie pays Alice $40**
+- **Charlie pays Bob $10**
 
-### Comparison:
-| Strategy | Transactions | Total Volume | Efficiency |
-| :--- | :--- | :--- | :--- |
-| **Naive** | 6 individual payments | $160 | - |
-| **Optimized** | 2 payments | $50 | **66% Fewer Tx** |
-
-**Optimized Result**: 
-- Charlie pays Alice $40
-- Charlie pays Bob $10
+Total transactions reduced by **66%**.
 
 ---
 
-## Scenario 2: Large Group Outing
-**Participants**: Alice, Bob, Charlie, David, Eve
+## Scenario 2: One High Spender (5 People)
+Alice pays for everything on a weekend trip ($500 total).
+David also pays $50 just for Alice and Bob ($25 each).
 
-### Raw Activity:
-- Alice pays $500 for the group ($100 each).
-- David pays $50 for Alice and Bob ($25 each).
-
-### Net Balances:
-- **Alice**: Pays $500, owes $100 (Own) + $25 (David). Net: **+$375**
-- **Bob**: Pays $0, owes $100 (Alice) + $25 (David). Net: **-$125**
-- **Charlie**: Pays $0, owes $100 (Alice). Net: **-$100**
-- **David**: Pays $50, owes $100 (Alice). Net: **-$50**
-- **Eve**: Pays $0, owes $100 (Alice). Net: **-$100**
-
-### Optimized Settlement result:
+### The Optimization:
+Instead of Everyone paying Alice back separately, and Alice paying David back:
 1. **Bob** pays **Alice** $125.00
 2. **Charlie** pays **Alice** $100.00
 3. **Eve** pays **Alice** $100.00
 4. **David** pays **Alice** $50.00
 
+Wait, why did Bob pay $125? Because the engine looks at the *net* debt—it cancels out the money Alice owed David and simplifies it into fewer, larger payments.
+
 ---
 
-## Scenario 3: Real-World Comparison Output
-When you query the `/settlement/compare` endpoint, the system returns a payload similar to this:
+## Comparison Output Example
+When you call our comparison endpoint, you get a report like this:
 
 ```json
 {
   "greedy": {
-    "transaction_count": 4,
-    "total_volume": "375.00",
-    "optimization_gain": "50.0%"
+    "transaction_count": 2,
+    "total_volume": "50.00",
+    "optimization_gain": "66.7%"
   },
   "baseline": {
-    "transaction_count": 8,
-    "total_volume": "375.00"
+    "transaction_count": 6,
+    "total_volume": "50.00"
   }
 }
 ```
-
-### Key Observations:
-1. **Transaction Count**: The Greedy algorithm consistently produces fewer transactions than the Baseline.
-2. **Volume Consistency**: The total money moved stays identical between both strategies, ensuring no funds are lost or created during optimization.
-3. **Gain Percentage**: Calculated as `(BaselineCount - GreedyCount) / BaselineCount`.
+This tells you exactly how many manual transfers you saved by using the optimization engine.
