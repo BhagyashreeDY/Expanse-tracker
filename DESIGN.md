@@ -30,4 +30,4 @@ We use PostgreSQL because of its strong consistency and we use `pgxpool` for con
 - We use `DECIMAL(18,2)` in the DB to match our Go-side decimal logic.
 
 ## 5. Filtering logic
-The balance calculation is dynamic. Instead of storing a "running total" for each user (which can get out of sync), we calculate the net balance on the fly from the raw expense records. This allows us to easily add **Date Filtering**—you can ask "what do I owe for only the trip in June?" and the engine will calculate it perfectly.
+The balance calculation is dynamic. Instead of storing a "running total" for each user (which can get out of sync), we calculate the net balance on the fly from the raw expense records. This allows us to easily add **Date Filtering**, you can ask "what do I owe for only the trip in June?" and the engine will calculate it perfectly.
