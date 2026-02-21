@@ -5,9 +5,36 @@ This is a straightforward, production-ready Go API for tracking group expenses a
 
 ### System Architecture
 
-![System Architecture](https://mermaid.ink/img/pako:eNptkctuwjAQRX-FclZIVfEByC6K-gE7pC4QE0_iNo4jXyeqivjvNXm0EkSOnXvujK9H7EwNFSYF89mU4M4LUKDqA7fK9i0N94E6r56_P7D66xPrF66v2nNlE0HkE6m3wLALf7zNOnf06F_Vq29VlyvO2XREUe-fUKDToOf9T-iCHu-p66r6E_Xo7F7S9VWVz6p7_m-Vf99mH12zXlFqSDApjF9NCe68AAVqPnCrbN-T4D5S58Xz9wdWf31m_dL1VXutLCOIPJI2Bwy78MfbrHMHj_5dvfoWdbni6E0H7PX-CQVaDXre_4Qu6fGeuq6qP1KPzu4lXV-W-ay6Z_5Xmf-8zZ66Zp2h1JBgcjD8XkzwwAtQoOYDt8L2jYf7SJ3n7h9fWf_1m_mBq6u-m_D0v060lDk?type=png)
+For the best experience, view this diagram on GitHub.
 
-*(Note: If the image above is not visible, it is likely due to an internet connection issue. The diagram illustrates the data flow from the Client through the Gin framework, Service Layer, and Greedy Engine, down to the PostgreSQL database.)*
+#### Graphical Overview (GitHub Only)
+```mermaid
+graph TD
+    User((User/Client)) -->|REST API| Gin[Gin Router]
+    Gin -->|Request| Handlers[Handlers Layer]
+    Handlers -->|DTO| Services[Service Layer]
+    Services -->|Logic| Algorithms[Greedy Engine]
+    Services -->|Persistence| Repo[Postgres Repository]
+    Repo -->|SQL| DB[(PostgreSQL)]
+```
+
+#### Universal Sketch (Works on all platforms)
+```text
+  ┌───────────────┐      ┌────────────────┐      ┌───────────────┐
+  │  Client/User  │ ────▶│  API (Gin ML)  │ ────▶│ Service Layer │
+  └───────────────┘      └────────────────┘      └───────┬───────┘
+                                                         │
+                                         ┌───────────────┴───────────────┐
+                                         ▼                               ▼
+                                 ┌───────────────┐               ┌───────────────┐
+                                 │ Greedy Engine │               │ Postgres Repo │
+                                 └───────────────┘               └───────┬───────┘
+                                                                         │
+                                                                         ▼
+                                                                 ┌───────────────┐
+                                                                 │ PostgreSQL DB │
+                                                                 └───────────────┘
+```
 
 ### Quick Links
 - [How the matching works](ALGORITHM.md)
