@@ -22,3 +22,6 @@ This document logs the core prompts and instructions used to build this engine. 
 
 ## Step 7: Localization & Refinement
 > "Update the documentation to use the Indian Rupee symbol (₹) instead of the dollar sign ($) across all examples and scenarios. Ensure that the tone remains humanized and all placeholders are professional."
+
+## Step 8: Cross-Platform Diagram Fix
+> "The Mermaid diagrams aren't rendering on all live links. Replace the raw Mermaid code and ASCII sketches with a high-compatibility live-rendered image link. Ensure the architecture diagram is visible as a real image in ANY Markdown viewer."
