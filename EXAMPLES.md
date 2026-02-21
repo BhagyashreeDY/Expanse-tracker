@@ -33,7 +33,7 @@ Instead of Everyone paying Alice back separately, and Alice paying David back:
 3. **Eve** pays **Alice** ₹100.00
 4. **David** pays **Alice** ₹50.00
 
-Wait, why did Bob pay ₹125? Because the engine looks at the *net* debt—it cancels out the money Alice owed David and simplifies it into fewer, larger payments.
+Wait, why did Bob pay ₹125? Because the engine looks at the *net* debt, it cancels out the money Alice owed David and simplifies it into fewer, larger payments.
 
 ---
 
