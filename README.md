@@ -4,6 +4,21 @@
 This is a straightforward, production-ready Go API for tracking group expenses and settling debts. The main goal is to make sure everyone gets paid back with the fewest number of bank transfers possible. We built this to be exact—using proper decimal math instead of risky floats—and efficient.
 
 ### System Architecture
+
+```text
+  [ Client / User ]
+         │
+         ▼
+  [ REST API (Gin) ] ────▶ [ Service Layer ]
+                                 │
+                                 ▼
+                         [ Greedy Engine ]
+                                 │
+                                 ▼
+                        [ PostgreSQL DB ]
+```
+*(Note: A full graphical version of this diagram is automatically rendered when viewed on GitHub using Mermaid.)*
+
 ```mermaid
 graph TD
     User((User/Client)) -->|REST API| Gin[Gin Router]
