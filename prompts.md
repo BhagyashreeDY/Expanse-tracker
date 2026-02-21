@@ -1,4 +1,4 @@
-# Project Build Logs: Interaction History
+﻿# Project Build Logs: Interaction History
 
 This document logs the core prompts and instructions used to build this engine. We kept this for transparency to show how the system evolved from a basic API to a production-ready settlement engine.
 
@@ -19,3 +19,6 @@ This document logs the core prompts and instructions used to build this engine. 
 
 ## Step 6: Documentation Overhaul
 > "Redo the documentation to remove robotic symbols and AI-like formatting. Make it sound like a developer wrote it. Add scenario walkthroughs and a design overview that explains the 'Penny Problem' and float issues."
+
+## Step 7: Localization & Refinement
+> "Update the documentation to use the Indian Rupee symbol (₹) instead of the dollar sign ($) across all examples and scenarios. Ensure that the tone remains humanized and all placeholders are professional."

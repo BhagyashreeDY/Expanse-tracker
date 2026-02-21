@@ -1,4 +1,4 @@
-# How we settle debts: The Greedy Matching Logic
+﻿# How we settle debts: The Greedy Matching Logic
 
 We use a "Greedy" algorithm to figure out the best way to move money around. The goal is simple: everyone gets their money back, but with the fewest number of Venmo or bank transfers possible.
 
@@ -31,9 +31,9 @@ While there are people left in both lists:
 5. Repeat until everyone is at zero.
 
 ## Example Flow
-Imagine Alice is owed $40, and Bob owes $30, while Charlie owes $10.
-1. The engine matches Bob with Alice ($30). Bob is done. Alice still needs $10.
-2. The engine matches Charlie with Alice ($10). Both are done.
+Imagine Alice is owed ₹40, and Bob owes ₹30, while Charlie owes ₹10.
+1. The engine matches Bob with Alice (₹30). Bob is done. Alice still needs ₹10.
+2. The engine matches Charlie with Alice (₹10). Both are done.
 3. Total transfers: 2.
 
 ## Why this works
@@ -41,3 +41,4 @@ By matching the biggest debts first, we avoid "fragmenting" the money. Any group
 
 ## Complexity
 The algorithm is very fast—**O(n log n)**. The only "slow" part is the sorting, which is negligible for any realistic group size (even hundreds of people). We use fixed-precision math (no floats!) to make sure not a single cent is lost in the process.
+

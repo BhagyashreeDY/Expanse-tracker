@@ -1,4 +1,4 @@
-# Design & Tech Choices
+﻿# Design & Tech Choices
 
 This document explains why we built the system this way and the trade-offs we made.
 
@@ -15,14 +15,14 @@ In programming, basic decimals (floats) are stored as binary fractions. This cau
 **Our Choice**: We use `shopspring/decimal`. It treats numbers as integers with a decimal point, meaning `0.1 + 0.2` is exactly `0.3`. No rounding errors, ever.
 
 ## 3. Handling the "Penny Problem"
-When you split a $10 bill 3 ways, it becomes $3.3333...
-If you give everyone $3.33, you've only accounted for $9.99. Someone "lost" a penny.
+When you split a ₹10 bill 3 ways, it becomes ₹3.3333...
+If you give everyone ₹3.33, you've only accounted for ₹9.99. Someone "lost" a penny.
 
 **Our Solution**: Our `CalculateEqualSplits` function gives the first (N-1) people the rounded amount and gives the last person the remainder.
-- Person 1: $3.33
-- Person 2: $3.33
-- Person 3: $3.34
-Total: $10.00. This ensures the database always stays in balance.
+- Person 1: ₹3.33
+- Person 2: ₹3.33
+- Person 3: ₹3.34
+Total: ₹10.00. This ensures the database always stays in balance.
 
 ## 4. Database Integrity
 We use PostgreSQL because of its strong consistency and we use `pgxpool` for connection management.

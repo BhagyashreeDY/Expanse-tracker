@@ -1,4 +1,4 @@
-# API Testing Checklist
+﻿# API Testing Checklist
 
 Use these commands to verify the Expense Tracker API functionality.
 
@@ -51,7 +51,7 @@ curl -X POST http://localhost:8080/groups/<GROUP_ID>/members \
 
 ## 5. Record Expense
 ```bash
-# Alice pays $100, split equally with Bob
+# Alice pays ₹100, split equally with Bob
 curl -X POST http://localhost:8080/groups/<GROUP_ID>/expenses \
 -H "Content-Type: application/json" \
 -d '{
@@ -90,3 +90,4 @@ curl -X POST http://localhost:8080/groups/<GROUP_ID>/expenses ... -d '{"splits":
 # Mismatched sum
 curl -X POST http://localhost:8080/groups/<GROUP_ID>/expenses ... -d '{"amount": "100", "splits": [{"user_id": "U1", "amount": "10"}]}'
 ```
+

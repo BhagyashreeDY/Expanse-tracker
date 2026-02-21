@@ -1,4 +1,4 @@
-# Debt Optimization & Settlement Engine
+﻿# Debt Optimization & Settlement Engine
 
 ## What is this?
 This is a straightforward, production-ready Go API for tracking group expenses and settling debts. The main goal is to make sure everyone gets paid back with the fewest number of bank transfers possible. We built this to be exact—using proper decimal math instead of risky floats—and efficient.
@@ -80,7 +80,7 @@ go run cmd/main.go
 ```
 
 ### 4. Try it out
-Here is how you'd add a $120 dinner split between three people:
+Here is how you'd add a ₹120 dinner split between three people:
 ```bash
 curl -X POST http://localhost:8080/groups/<GROUP_ID>/expenses \
 -H "Content-Type: application/json" \
